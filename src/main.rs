@@ -1,11 +1,11 @@
-use opencv::imgcodecs::{IMREAD_GRAYSCALE, imwrite};
-use opencv::imgproc::{threshold, THRESH_OTSU, morphology_ex, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, morphology_default_border_value, RETR_LIST};
-use opencv::core::{Mat, Vector, Size, Point, BORDER_WRAP, Scalar, BORDER_TRANSPARENT,BORDER_REPLICATE};
-use opencv::imgproc::{get_structuring_element, find_contours};
-use opencv::imgproc::ThresholdTypes::THRESH_BINARY;
+use opencv::core::{Mat, Vector, Size, Point, BORDER_WRAP, Scalar, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3};
+use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
+use opencv::imgproc::{get_structuring_element, find_contours, threshold, THRESH_OTSU, morphology_ex, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, morphology_default_border_value, RETR_CCOMP, CHAIN_APPROX_SIMPLE, draw_contours, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
+use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i};
 
 fn main(){
     // 元画像を読み込み
+    println!("画像の読み込みを開始します。");
     let path: String = String::from("image.jpg");
 
     // 処理元の画像を定義
@@ -26,7 +26,8 @@ fn main(){
 
     // ２値化処理
     let result_threshold = threshold(&src_img, &mut dst_img_threshold, 0.0, 255.0, THRESH_OTSU);
-    if result_threshold.is_err() {
+    if let Err(code) = result_threshold {
+        println!("２値化処理に失敗しました。 Message: {}", code);
         return;
     }
 
@@ -44,7 +45,8 @@ fn main(){
                                                   Point::default(),
                                                   1, BORDER_REPLICATE,
                                                   Scalar::default());
-    if result_morphology_closing.is_err() {
+    if let Err(code) = result_morphology_closing {
+        println!("クロージング処理に失敗しました。 Message: {}", code);
         return;
     }
 
@@ -59,7 +61,8 @@ fn main(){
                                                   Point::default(),
                                                   1, BORDER_REPLICATE,
                                                   Scalar::default());
-    if result_morphology_opening.is_err() {
+    if let Err(code) = result_morphology_opening {
+        println!("オープニング処理に失敗しました。 Message: {}", code);
         return;
     }
 
@@ -69,5 +72,52 @@ fn main(){
 
     ////// 輪郭の抽出ここから//////
 
-    imwrite("output.jpg", &dst_img_open, &Vector::new());
+    // 前処理後の画像
+    let mut src_img_pretreatment = dst_img_open.clone();
+
+    // 抽出した輪郭の出力先を定義
+    let mut contours = VectorOfVectorOfPoint::new();
+
+    // 輪郭の抽出
+    let result_find_contours = find_contours(&src_img_pretreatment, &mut contours, RETR_TREE, CHAIN_APPROX_SIMPLE, Point::new(5, 5));
+    if let Err(code) = result_find_contours {
+        println!("輪郭の抽出に失敗しました。 Message: {}", code);
+        return;
+    }
+
+    // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
+    let mut dst_img_draw_contours;
+    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_COLOR);
+    match result_read_img {
+        Ok(img) => dst_img_draw_contours = img,
+        Err(code) => {
+            print!("code: {:?}", code);
+            return;
+        }
+    };
+    // 輪郭の階層情報
+    let hierarchy = VectorOfVec4i::default();
+
+    // 描画する輪郭の色
+    let red = Scalar::new(255.0, 255.0, 0.0, 1.0);
+
+    // 輪郭の描画
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, red, 10, LINE_8, &hierarchy, INTER_NEAREST, Point::new(5, 5));
+    if let Err(code) = result_draw_contours {
+        println!("輪郭の描画に失敗しました。 Message: {}", code);
+        return;
+    }
+
+    //
+    let result_write = imwrite("output_contours.jpg", &dst_img_draw_contours, &Vector::new());
+    if let Err(code) = result_write {
+        println!("輪郭描画後の出力に失敗しました。 Message: {}", code);
+        panic!();
+    }
+
+    ////// 輪郭の抽出ここまで //////
+
+    // 全ての処理が終わったあと、画像を出力する
+    println!("画像を出力します。");
+    imwrite("output.jpg", &src_img_pretreatment, &Vector::new());
 }
