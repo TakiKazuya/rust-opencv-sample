@@ -1,6 +1,6 @@
 use opencv::core::{Mat, Vector, Size, Point, BORDER_WRAP, Scalar, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3};
 use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
-use opencv::imgproc::{get_structuring_element, find_contours, threshold, THRESH_OTSU, morphology_ex, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, morphology_default_border_value, RETR_CCOMP, CHAIN_APPROX_SIMPLE, draw_contours, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
+use opencv::imgproc::{get_structuring_element, find_contours, threshold, THRESH_OTSU, morphology_ex, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, morphology_default_border_value, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, draw_contours, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i};
 
 fn main(){
@@ -79,7 +79,7 @@ fn main(){
     let mut contours = VectorOfVectorOfPoint::new();
 
     // 輪郭の抽出
-    let result_find_contours = find_contours(&src_img_pretreatment, &mut contours, RETR_TREE, CHAIN_APPROX_SIMPLE, Point::new(0, 0));
+    let result_find_contours = find_contours(&src_img_pretreatment, &mut contours, RETR_LIST, CHAIN_APPROX_SIMPLE, Point::new(0, 0));
     if let Err(code) = result_find_contours {
         println!("輪郭の抽出に失敗しました。 Message: {}", code);
         return;
@@ -87,7 +87,7 @@ fn main(){
 
     // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
     let mut dst_img_draw_contours;
-    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_COLOR);
+    let result_read_img = opencv::imgcodecs::imread("output_pretreatment.jpg", IMREAD_COLOR);
     match result_read_img {
         Ok(img) => dst_img_draw_contours = img,
         Err(code) => {
@@ -102,7 +102,7 @@ fn main(){
     let green = Scalar::new(0.0, 255.0, 0.0, 1.0);
 
     // 輪郭の描画
-    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 10, LINE_8, &hierarchy, INTER_NEAREST, Point::new(0, 0));
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &hierarchy, INTER_MAX, Point::new(0, 0));
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
         return;
