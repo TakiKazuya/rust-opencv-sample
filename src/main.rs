@@ -99,10 +99,10 @@ fn main(){
     let hierarchy = VectorOfVec4i::default();
 
     // 描画する輪郭の色
-    let red = Scalar::new(255.0, 255.0, 0.0, 1.0);
+    let green = Scalar::new(0.0, 255.0, 0.0, 1.0);
 
     // 輪郭の描画
-    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, red, 10, LINE_8, &hierarchy, INTER_NEAREST, Point::new(5, 5));
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 10, LINE_8, &hierarchy, INTER_NEAREST, Point::new(5, 5));
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
         return;
