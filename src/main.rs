@@ -87,7 +87,7 @@ fn main(){
 
     // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
     let mut dst_img_draw_contours;
-    let result_read_img = opencv::imgcodecs::imread("output_pretreatment.jpg", IMREAD_COLOR);
+    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_COLOR);
     match result_read_img {
         Ok(img) => dst_img_draw_contours = img,
         Err(code) => {
@@ -102,7 +102,7 @@ fn main(){
     let green = Scalar::new(0.0, 255.0, 0.0, 1.0);
 
     // 輪郭の描画
-    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &hierarchy, INTER_MAX, Point::new(0, 0));
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &hierarchy, INTER_MAX, Point::new(5, 5));
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
         return;
