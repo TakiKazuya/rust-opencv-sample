@@ -76,10 +76,10 @@ fn main(){
     let mut src_img_pretreatment = dst_img_open.clone();
 
     // 抽出した輪郭の出力先を定義
-    let mut contours = VectorOfVectorOfPoint::new();
+    let mut contours = VectorOfVectorOfPoint::default();
 
     // 輪郭の抽出
-    let result_find_contours = find_contours(&src_img_pretreatment, &mut contours, RETR_LIST, CHAIN_APPROX_SIMPLE, Point::new(0, 0));
+    let result_find_contours = find_contours(&src_img_pretreatment, &mut contours, RETR_LIST, CHAIN_APPROX_SIMPLE, Point::default());
     if let Err(code) = result_find_contours {
         println!("輪郭の抽出に失敗しました。 Message: {}", code);
         panic!();
