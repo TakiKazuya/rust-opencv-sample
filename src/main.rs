@@ -47,7 +47,7 @@ fn main(){
                                                   Scalar::default());
     if let Err(code) = result_morphology_closing {
         println!("クロージング処理に失敗しました。 Message: {}", code);
-        return;
+        panic!();
     }
 
     // オープニング処理の出力先を定義
@@ -63,7 +63,7 @@ fn main(){
                                                   Scalar::default());
     if let Err(code) = result_morphology_opening {
         println!("オープニング処理に失敗しました。 Message: {}", code);
-        return;
+        panic!();
     }
 
     imwrite("output_pretreatment.jpg", &dst_img_open, &Vector::new());
@@ -82,7 +82,7 @@ fn main(){
     let result_find_contours = find_contours(&src_img_pretreatment, &mut contours, RETR_LIST, CHAIN_APPROX_SIMPLE, Point::new(0, 0));
     if let Err(code) = result_find_contours {
         println!("輪郭の抽出に失敗しました。 Message: {}", code);
-        return;
+        panic!();
     }
 
     // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
@@ -92,7 +92,7 @@ fn main(){
         Ok(img) => dst_img_draw_contours = img,
         Err(code) => {
             print!("code: {:?}", code);
-            return;
+            panic!();
         }
     };
     // 輪郭の階層情報
@@ -105,7 +105,7 @@ fn main(){
     let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &hierarchy, INTER_MAX, Point::new(5, 5));
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
-        return;
+        panic!();
     }
 
     //
