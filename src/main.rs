@@ -15,7 +15,7 @@ fn main(){
         Ok(img) => src_img = img,
         Err(code) => {
             print!("code: {:?}", code);
-            return;
+            panic!();
         }
     };
 
@@ -28,7 +28,7 @@ fn main(){
     let result_threshold = threshold(&src_img, &mut dst_img_threshold, 0.0, 255.0, THRESH_OTSU);
     if let Err(code) = result_threshold {
         println!("２値化処理に失敗しました。 Message: {}", code);
-        return;
+        panic!();
     }
 
     // カーネルを定義
