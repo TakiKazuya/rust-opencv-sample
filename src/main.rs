@@ -1,6 +1,7 @@
-use opencv::core::{Mat, Vector, Size, Point, BORDER_WRAP, Scalar, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3};
+use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3};
 use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
-use opencv::imgproc::{get_structuring_element, find_contours, threshold, THRESH_OTSU, morphology_ex, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, morphology_default_border_value, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, draw_contours, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
+use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours};
+use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i};
 
 fn main(){
@@ -20,6 +21,8 @@ fn main(){
     };
 
     ////// 前処理ここから //////
+
+    println!("前処理開始");
 
     // 出力先を用意
     let mut dst_img_threshold = Mat::default();
@@ -68,9 +71,13 @@ fn main(){
 
     imwrite("output_pretreatment.jpg", &dst_img_open, &Vector::new());
 
+    println!("前処理終了");
+
     ////// 前処理ここまで //////
 
     ////// 輪郭の抽出ここから//////
+
+    println!("輪郭抽出処理開始");
 
     // 前処理後の画像
     let mut src_img_pretreatment = dst_img_open.clone();
@@ -115,7 +122,31 @@ fn main(){
         panic!();
     }
 
+    println!("輪郭抽出処理終了");
+
     ////// 輪郭の抽出ここまで //////
+
+    ////// 面積が最大になる輪郭を取得 //////
+
+    println!("面積が最大になる輪郭を取得する処理開始");
+
+    // 輪郭の面積を保存するベクタを定義する。 要素の型はf64
+    // 抽出した輪郭(contours)から面積を取得し、配列に追加していく。
+    let contour_areas: Vec<f64> = contours.iter().map(|contour| contour_area(&contour, false).unwrap()).collect();
+
+    // 最大値を取得する。
+    let max_area = contour_areas.iter().fold(0.0/0.0, |m, v| v.max(m));
+
+    // インデックスを取得
+    let index = contour_areas.iter().position(|&area| area == max_area).unwrap();
+
+    // 取得したインデックスから輪郭の情報を取得する。
+    let max_contour = contours.iter().nth(index).unwrap();
+    println!("面積が最大になる輪郭 -> {:?}", max_contour);
+
+    println!("面積が最大になる輪郭を取得する処理終了");
+
+    ////// 面積が最大になる輪郭を取得ここまで //////
 
     // 全ての処理が終わったあと、画像を出力する
     println!("画像を出力します。");
