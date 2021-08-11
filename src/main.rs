@@ -1,6 +1,6 @@
 use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3};
 use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
-use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours};
+use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours, arc_length};
 use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i};
 
@@ -151,6 +151,23 @@ fn main(){
     println!("面積が最大になる輪郭を取得する処理終了");
 
     ////// 面積が最大になる輪郭を取得ここまで //////
+
+    ////// 図形の周囲の長さ取得ここから //////
+
+    let result_arc_length = arc_length(&max_contour, true);
+    let arc_len;
+    match result_arc_length {
+        Ok(length) => {
+            arc_len = length;
+            println!("arc_len: {}", arc_len)
+        },
+        Err(code) => {
+            print!("図形の周囲の長さの取得に失敗しました。 Message: {}", code);
+            panic!();
+        }
+    };
+
+    ////// 図形の周囲の長さ取得ここまで //////
 
     // 全ての処理が終わったあと、画像を出力する
     println!("画像を出力します。");
