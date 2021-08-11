@@ -132,7 +132,11 @@ fn main(){
 
     // 輪郭の面積を保存するベクタを定義する。 要素の型はf64
     // 抽出した輪郭(contours)から面積を取得し、配列に追加していく。
-    let contour_areas: Vec<f64> = contours.iter().map(|contour| contour_area(&contour, false).unwrap()).collect();
+    let contour_areas: Vec<f64> = contours.iter().map(|contour| {
+        contour_area(&contour, false).unwrap_or(0.0)
+    }).collect();
+
+    println!("contour_areas: {:?}", contour_areas);
 
     // 最大値を取得する。
     let max_area = contour_areas.iter().fold(0.0/0.0, |m, v| v.max(m));
