@@ -1,19 +1,20 @@
-use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3, no_array};
+use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3, no_array, VectorExtern};
 use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
-use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours, arc_length, approx_poly_dp};
+use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours, arc_length, approx_poly_dp, circle};
 use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST};
-use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i, VectorOfPoint};
+use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
 
 mod pretreatment;
+
+const SOURCE_IMAGE_PATH: &str = "image.jpg";
 
 fn main(){
     // 元画像を読み込み
     println!("画像の読み込みを開始します。");
-    let path: String = String::from("image.jpg");
 
     // 処理元の画像を定義
     let mut src_img;
-    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_GRAYSCALE);
+    let result_read_img = opencv::imgcodecs::imread(SOURCE_IMAGE_PATH, IMREAD_GRAYSCALE);
     match result_read_img {
         Ok(img) => src_img = img,
         Err(code) => {
@@ -47,7 +48,7 @@ fn main(){
 
     // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
     let mut dst_img_draw_contours;
-    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_COLOR);
+    let result_read_img = opencv::imgcodecs::imread(SOURCE_IMAGE_PATH, IMREAD_COLOR);
     match result_read_img {
         Ok(img) => dst_img_draw_contours = img,
         Err(code) => {
@@ -60,7 +61,7 @@ fn main(){
     let green = Scalar::new(0.0, 255.0, 0.0, 1.0);
 
     // 輪郭の描画
-    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::new(5, 5));
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::default());
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
         panic!();
@@ -96,7 +97,8 @@ fn main(){
     let index = contour_areas.iter().position(|&area| area == max_area).unwrap();
 
     // 取得したインデックスから輪郭の情報を取得する。
-    let max_contour = contours.iter().nth(index).unwrap();
+    let max_contour = contours.get(index).unwrap();
+
     println!("面積が最大になる輪郭 -> {:?}", max_contour);
 
     println!("面積が最大になる輪郭を取得する処理終了");
@@ -131,9 +133,9 @@ fn main(){
 
     println!("{:?}", &approx_contour);
 
-    // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
+    // 頂点を描画した画像の出力先(元画像に頂点を描画して出力する)
     let mut dst_img_draw_vertex;
-    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_COLOR);
+    let result_read_img = opencv::imgcodecs::imread(SOURCE_IMAGE_PATH, IMREAD_COLOR);
     match result_read_img {
         Ok(img) => dst_img_draw_vertex = img,
         Err(code) => {
@@ -142,11 +144,9 @@ fn main(){
         }
     };
 
-    // 頂点の描画
-    let result_draw_vertex = draw_contours(&mut dst_img_draw_vertex, &approx_contour, -1, green, 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::default());
-    if let Err(code) = result_draw_vertex {
-        println!("頂点の描画に失敗しました。 Message: {}", code);
-        panic!();
+    // 頂点を一つずつ取り出して描画していく
+    for point in approx_contour.iter() {
+        circle(&mut dst_img_draw_vertex, point, 3, green, 5, 0, 0);
     }
 
     let result_write = imwrite("output_vertex.jpg", &dst_img_draw_vertex, &Vector::new());
