@@ -3,7 +3,6 @@ use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
 use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours, arc_length, approx_poly_dp};
 use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i, VectorOfPoint};
-use opencv::Error;
 
 mod pretreatment;
 
