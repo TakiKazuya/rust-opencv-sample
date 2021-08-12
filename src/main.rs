@@ -1,7 +1,7 @@
-use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3};
+use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3, no_array};
 use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
 use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours, arc_length, approx_poly_dp};
-use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, FILLED, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST, RETR_TREE};
+use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfVec4i, VectorOfPoint};
 
 mod pretreatment;
@@ -55,14 +55,12 @@ fn main(){
             panic!();
         }
     };
-    // 輪郭の階層情報
-    let hierarchy = VectorOfVec4i::default();
 
     // 描画する輪郭の色
     let green = Scalar::new(0.0, 255.0, 0.0, 1.0);
 
     // 輪郭の描画
-    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &hierarchy, INTER_MAX, Point::new(5, 5));
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::new(5, 5));
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
         panic!();
@@ -133,14 +131,25 @@ fn main(){
 
     println!("{:?}", &approx_contour);
 
+    // 輪郭を描画した画像の出力先(元画像に輪郭を描画して出力する)
+    let mut dst_img_draw_vertex;
+    let result_read_img = opencv::imgcodecs::imread(&path, IMREAD_COLOR);
+    match result_read_img {
+        Ok(img) => dst_img_draw_vertex = img,
+        Err(code) => {
+            print!("code: {:?}", code);
+            panic!();
+        }
+    };
+
     // 頂点の描画
-    let result_draw_vertex = draw_contours(&mut dst_img_draw_contours, &approx_contour, -1, green, 5, LINE_8, &hierarchy, INTER_MAX, Point::new(5, 5));
+    let result_draw_vertex = draw_contours(&mut dst_img_draw_vertex, &approx_contour, -1, green, 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::default());
     if let Err(code) = result_draw_vertex {
         println!("頂点の描画に失敗しました。 Message: {}", code);
         panic!();
     }
 
-    let result_write = imwrite("output_vertex.jpg", &dst_img_draw_contours, &Vector::new());
+    let result_write = imwrite("output_vertex.jpg", &dst_img_draw_vertex, &Vector::new());
     if let Err(code) = result_write {
         println!("頂点描画後の出力に失敗しました。 Message: {}", code);
         panic!();
