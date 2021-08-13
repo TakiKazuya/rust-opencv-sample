@@ -6,6 +6,8 @@ use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
 
 mod pretreatment;
 
+mod colors;
+
 const SOURCE_IMAGE_PATH: &str = "image.jpg";
 
 fn main(){
@@ -57,11 +59,8 @@ fn main(){
         }
     };
 
-    // 描画する輪郭の色
-    let green = Scalar::new(0.0, 255.0, 0.0, 1.0);
-
     // 輪郭の描画
-    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, green, 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::default());
+    let result_draw_contours = draw_contours(&mut dst_img_draw_contours, &contours, -1, colors::green(), 5, LINE_8, &no_array().unwrap(), INTER_MAX, Point::default());
     if let Err(code) = result_draw_contours {
         println!("輪郭の描画に失敗しました。 Message: {}", code);
         panic!();
@@ -146,7 +145,7 @@ fn main(){
 
     // 頂点を一つずつ取り出して描画していく
     for point in approx_contour.iter() {
-        circle(&mut dst_img_draw_vertex, point, 3, green, 5, 0, 0);
+        circle(&mut dst_img_draw_vertex, point, 3, colors::red(), 5, 0, 0);
     }
 
     let result_write = imwrite("output_vertex.jpg", &dst_img_draw_vertex, &Vector::new());
