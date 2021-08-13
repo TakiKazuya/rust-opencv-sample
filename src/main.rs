@@ -123,14 +123,14 @@ fn main(){
 
     ////// 図形の頂点抽出ここから //////
 
-    let mut approx_contour = VectorOfPoint::default();
-    let result_approx_contour = approx_poly_dp(&max_contour, &mut approx_contour, 0.1 * arc_len, true);
+    let mut vertex_points = VectorOfPoint::default();
+    let result_approx_contour = approx_poly_dp(&max_contour, &mut vertex_points, 0.1 * arc_len, true);
     if let Err(code) = result_approx_contour {
         println!("頂点抽出に失敗しました。 Message: {}", code);
         panic!();
     }
 
-    println!("{:?}", &approx_contour);
+    println!("vertex_points: {:?}", &vertex_points);
 
     // 頂点を描画した画像の出力先(元画像に頂点を描画して出力する)
     let mut dst_img_draw_vertex;
@@ -144,7 +144,7 @@ fn main(){
     };
 
     // 頂点を一つずつ取り出して描画していく
-    for point in approx_contour.iter() {
+    for point in vertex_points.iter() {
         circle(&mut dst_img_draw_vertex, point, 3, colors::red(), 5, 0, 0);
     }
 
