@@ -163,6 +163,37 @@ fn main(){
         panic!("頂点の数は4つである必要があります。抽出した頂点の数：{}", vertex_points.len());
     }
 
+    // Vector<Point>型からVec<Point>型に変換
+    let mut vec_vertex_points = vertex_points.to_vec();
+    // 座標のxの値でソート
+    vec_vertex_points.sort_by(|p, p1| {
+        p.x.cmp(&p1.x)
+    });
+
+    // 左右で座標を分割
+    let mut left = vec_vertex_points.get(0..2).unwrap().to_owned();
+    let mut right = vec_vertex_points.get(2..4).unwrap().to_owned();
+
+    // y軸でソートし、0番目を上側、1番目を下側とする
+    // 左側
+    left.sort_by(|p, p1| {
+        p.y.cmp(&p1.y)
+    });
+    let left_up = left.first().unwrap().to_owned();
+    let left_down = left.last().unwrap().to_owned();
+
+    // 右側
+    right.sort_by(|p, p1| {
+        p.y.cmp(&p1.y)
+    });
+    let right_up = right.first().unwrap().to_owned();
+    let right_down = right.last().unwrap().to_owned();
+
+    println!("left_up: {:?}", left_up);
+    println!("left_down: {:?}", left_down);
+    println!("right_up: {:?}", right_up);
+    println!("right_down: {:?}", right_down);
+
     ////// 座標を左上、右上、右下、左下に分類する ここまで //////
 
     // 全ての処理が終わったあと、画像を出力する
