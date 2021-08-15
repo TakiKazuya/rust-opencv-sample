@@ -1,8 +1,10 @@
-use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3, no_array, VectorExtern};
+use opencv::core::{Mat, Vector, Size, Point, Scalar, BORDER_WRAP, BORDER_TRANSPARENT, BORDER_REPLICATE, CV_8UC3, no_array, VectorExtern, norm};
 use opencv::imgcodecs::{IMREAD_GRAYSCALE, IMREAD_COLOR, imwrite};
 use opencv::imgproc::{get_structuring_element, find_contours, threshold, morphology_ex, contour_area, draw_contours, arc_length, approx_poly_dp, circle};
 use opencv::imgproc::{THRESH_OTSU, MORPH_OPEN, MORPH_CLOSE, MORPH_RECT, RETR_CCOMP, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, INTER_MAX, LINE_8, INTER_NEAREST, RETR_LIST};
 use opencv::types::{VectorOfVectorOfPoint, VectorOfPoint};
+use opencv::core::NormTypes::NORM_L1;
+use std::error::Error;
 
 mod pretreatment;
 
@@ -213,6 +215,9 @@ fn main(){
     // 右上の頂点のX座標と右下の頂点のX座標が同じである
     // 左下の頂点のY座標と右下の頂点のY座標が同じである
 
+    let lr = is_parallel(left_up, left_down, right_up, right_down);
+    let ud = is_parallel(left_up, Point::new(347, 0), left_down, right_down);
+
     // 許容誤差
     const ALLOWABLE_ERROR: i32 = 2;
 
@@ -240,4 +245,28 @@ fn main(){
     // 全ての処理が終わったあと、画像を出力する
     println!("画像を出力します。");
     imwrite("output.jpg", &output_img, &Vector::new());
+}
+
+// 線分abとcdが平行かどうか
+// 参考: http://www.atelier-blue.com/contest/pc-concours/2003-h/2003h01-25.htm
+fn is_parallel(mut a: Point, mut b: Point, mut c: Point, mut d: Point) -> bool {
+    // 点bから点aを、点dから点cを引く。そうすることにより、原点からからb,dそれぞれを通る直線に平行移動できる。
+    b.x -= a.x;
+    b.y -= a.y;
+    d.x -= c.x;
+    d.y -= c.y;
+
+    return if b.x == 0 || d.x == 0 {
+        if b.x == 0 && d.x == 0 {
+            true
+        } else {
+            false
+        }
+    } else {
+        if b.y / b.x == d.y / d.x {
+            true
+        } else {
+            false
+        }
+    }
 }
