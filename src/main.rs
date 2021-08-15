@@ -25,6 +25,16 @@ fn main(){
         }
     };
 
+    let mut output_img;
+    let result_read_img = opencv::imgcodecs::imread(SOURCE_IMAGE_PATH, IMREAD_COLOR);
+    match result_read_img {
+        Ok(img) => output_img = img,
+        Err(code) => {
+            print!("code: {:?}", code);
+            panic!();
+        }
+    };
+
     ////// 前処理ここから //////
 
     let img_pretreatment = pretreatment::run(src_img);
@@ -196,7 +206,38 @@ fn main(){
 
     ////// 座標を左上、右上、右下、左下に分類する ここまで //////
 
+    ////// 図形が台形であるか判定 ここから //////
+    // 以下の全てが当てはまらない場合に補正を行う。
+    // 左上の頂点のX座標と左下の頂点のX座標が同じである
+    // 左上の頂点のY座標と右上の頂点のY座標が同じである
+    // 右上の頂点のX座標と右下の頂点のX座標が同じである
+    // 左下の頂点のY座標と右下の頂点のY座標が同じである
+
+    // 許容誤差
+    const ALLOWABLE_ERROR: i32 = 2;
+
+    // 左上の頂点のX座標と左下の頂点のX座標が同じであるか
+    let left_up_x_eq_left_down_x = (left_up.x - ALLOWABLE_ERROR .. left_up.x + ALLOWABLE_ERROR).contains(&left_down.x);
+
+    // 左上の頂点のY座標と右上の頂点のY座標が同じであるか
+    let left_up_y_eq_right_up_y = (left_up.y - ALLOWABLE_ERROR .. left_up.y + ALLOWABLE_ERROR).contains(&right_up.y);
+
+    // 右上の頂点のX座標と右下の頂点のX座標が同じであるか
+    let right_up_x_eq_right_down_x = (right_up.x - ALLOWABLE_ERROR .. right_up.x + ALLOWABLE_ERROR).contains(&right_down.x);
+
+    // 左下の頂点のY座標と右下の頂点のY座標が同じであるか
+    let left_down_y_eq_right_down_y = (left_down.y - ALLOWABLE_ERROR .. left_down.y + ALLOWABLE_ERROR).contains(&right_down.y);
+
+    if left_up_x_eq_left_down_x || left_up_y_eq_right_up_y || right_up_x_eq_right_down_x || left_down_y_eq_right_down_y {
+        println!("台形ではありません。{:?} {:?} {:?} {:?}", left_up_x_eq_left_down_x, left_up_y_eq_right_up_y, right_up_x_eq_right_down_x, left_down_y_eq_right_down_y);
+    } else {
+        // 台形補正を行う
+        // output_img = 台形補正
+    }
+
+    ////// 図形が台形であるか判定 ここまで //////
+
     // 全ての処理が終わったあと、画像を出力する
     println!("画像を出力します。");
-    imwrite("output.jpg", &src_img_pretreatment, &Vector::new());
+    imwrite("output.jpg", &output_img, &Vector::new());
 }
