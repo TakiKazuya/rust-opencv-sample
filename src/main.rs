@@ -170,10 +170,10 @@ fn main(){
 
     ////// 台形補正処理 ここから //////
 
-    let upper_line = ((right_up.x - left_up.x).abs() ^ 2) + ((right_up.y - left_up.y).abs() ^ 2);
-    let downer_line = ((right_down.x - left_down.x).abs() ^ 2) + ((right_down.y - left_down.y).abs() ^ 2);
-    let left_line = ((left_up.x - left_down.x).abs() ^ 2) + ((left_up.y - left_down.y).abs() ^ 2);
-    let right_line = ((right_up.x - right_down.x).abs() ^ 2) + ((right_up.y - right_down.y).abs() ^ 2);
+    let upper_line = (right_up.x - left_up.x).abs() + (right_up.y - left_up.y).abs();
+    let downer_line = (right_down.x - left_down.x).abs() + (right_down.y - left_down.y).abs();
+    let left_line = (left_up.x - left_down.x).abs() + (left_up.y - left_down.y).abs();
+    let right_line = (right_up.x - right_down.x).abs() + (right_up.y - right_down.y).abs();
 
     let max_x = if upper_line > downer_line {
         upper_line
@@ -225,7 +225,7 @@ fn main(){
     };
 
     let mut img_corrected = Mat::default();
-    match warp_perspective(&src_img, &mut img_corrected, &m, Default::default(), 0, 0, Default::default()) {
+    match warp_perspective(&src_img, &mut img_corrected, &m, Size::new(max_x, max_y), 0, 0, Default::default()) {
         Ok(_) => {
             println!("success");
         },
